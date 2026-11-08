@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusTech Studios | Modern Web Solutions</title>
+    <style>
+        :root {
+            --bg: #090d16;
+            --card: #131b2e;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text: #f8fafc;
+            --text-sub: #94a3b8;
+            --border: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; }
+
+        .container { max-width: 900px; margin: 40px auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { font-size: 2.5rem; color: #fff; margin-bottom: 10px; }
+        header p { color: var(--text-sub); font-size: 1.1rem; }
+
+        .calculator-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .form-group { margin-bottom: 24px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #e2e8f0; }
+        
+        select, input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 8px; }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .price-display {
+            background: #0b1329;
+            border: 1px dashed var(--accent);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .price-display span { display: block; font-size: 0.9rem; color: var(--text-sub); }
+        .price-display strong { font-size: 2.2rem; color: var(--accent); }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        button:hover { background: var(--accent-hover); }
+
+        .success-msg {
+            display: none;
+            background: #065f46;
+            color: #34d399;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Custom Web Design Estimator</h1>
+        <p>Select your requirements to get an instant project estimate and schedule a consultation.</p>
+    </header>
+
+    <div class="calculator-card">
+        <!-- Replace YOUR_FORMSPREE_CODE with your actual Formspree ID -->
+        <form id="quoteForm" action="https://formspree.io/f/xnppykrd" method="POST">
+            
+            <div class="form-group">
+                <label for="siteType">Project Scope</label>
+                <select id="siteType" name="site_type" onchange="calculateTotal()">
+                    <option value="5000">Single Page Business Landing Page (₹5,000)</option>
+                    <option value="8000">Multi-Page Corporate Website (₹8,000)</option>
+                    <option value="12000">Interactive Dynamic Web App / Portal (₹12,000)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Add-On Features</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="addons[]" value="Custom Price Calculator (+₹2,000)" data-price="2000" onchange="calculateTotal()">
+                        Custom Price Calculator
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="addons[]" value="WhatsApp Direct Integration (+₹1,500)" data-price="1500" onchange="calculateTotal()">
+                        WhatsApp Direct Booking
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="addons[]" value="Speed & Mobile Optimization (+₹1,500)" data-price="1500" onchange="calculateTotal()">
+                        Speed & SEO Setup
+                    </label>
+                </div>
+            </div>
+
+            <div class="price-display">
+                <span>Estimated Investment:</span>
+                <strong id="totalPrice">₹5,000</strong>
+                <input type="hidden" name="estimated_total" id="hiddenTotalPrice" value="₹5,000">
+            </div>
+
+            <div class="form-group">
+                <label for="clientName">Your Name / Business Name</label>
+                <input type="text" id="clientName" name="client_name" placeholder="e.g. Apex Gym / Rahul" required>
+            </div>
+
+            <div class="form-group">
+                <label for="clientEmail">Email Address</label>
+                <input type="email" id="clientEmail" name="client_email" placeholder="client@gmail.com" required>
+            </div>
+
+            <button type="submit">Submit Quote Request</button>
+            <div class="success-msg" id="successMsg">Request sent successfully! Check your inbox shortly.</div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function calculateTotal() {
+        const siteType = parseInt(document.getElementById('siteType').value);
+        const checkboxes = document.querySelectorAll('input[name="addons[]"]:checked');
+        let addonTotal = 0;
+
+        checkboxes.forEach(cb => {
+            addonTotal += parseInt(cb.getAttribute('data-price'));
+        });
+
+        const total = siteType + addonTotal;
+        const formattedTotal = '₹' + total.toLocaleString('en-IN');
+        
+        document.getElementById('totalPrice').innerText = formattedTotal;
+        document.getElementById('hiddenTotalPrice').value = formattedTotal;
+    }
+
+    // AJAX Submission handler to prevent full page refresh
+    const form = document.getElementById("quoteForm");
+    form.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const data = new FormData(form);
+        const response = await fetch(form.action, {
+            method: form.method,
+            body: data,
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+            document.getElementById("successMsg").style.display = "block";
+            form.reset();
+            calculateTotal();
+        } else {
+            alert("Error sending request. Please check your connection.");
+        }
+    });
+</script>
+
+</body>
+</html>
